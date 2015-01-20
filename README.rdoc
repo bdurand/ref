@@ -37,4 +37,4 @@ Ruby does come with the WeakRef class in the standard library. However, there ar
 
 = BasicObject
 
-Not that weak references will not work with MRI/REE 1.8 or YARV 1.9. References will be created, but the objects will never be stored so the reference object will always treat the object as if it is always garbage collected. BasicObject does not implement the necessary methods to maintain the reference.
+Note that weak references will not work with MRI/REE 1.8 or YARV 1.9. References will be created, but the objects will never be stored so the reference object will always treat the object as if it is always garbage collected. BasicObject does not implement the necessary methods to maintain the reference.
