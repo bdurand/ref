@@ -9,6 +9,11 @@ REF_CLASSES = [
 ]
 
 NUM = 500_000
+WARM_UPS = 50
+
+def jruby?
+  defined? JRUBY_VERSION
+end
 
 def version
   if defined? Ref::VERSION
@@ -22,7 +27,7 @@ rescue
 end
 
 puts "~~~ Ruby version: #{RUBY_VERSION}"
-if defined? JRUBY_VERSION
+if jruby?
   puts "~~~ JRuby version: #{JRUBY_VERSION}"
 else
   puts "~~~ Ruby engine: #{RUBY_ENGINE}"
@@ -38,46 +43,78 @@ Benchmark.bm do |stats|
     ref = clazz.new('foo')
     value = nil
 
+    puts 'Before JVM warm-up...' if jruby?
     stats.report do
       NUM.times { value = ref.object }
+    end
+
+    if jruby?
+      WARM_UPS.times { value = ref.object }
+
+      puts 'After JVM warm-up...'
+      stats.report do
+        NUM.times { value = ref.object }
+      end
     end
   end
 end
 
 __END__
 
+$ jruby --server ref_speed_test.rb
 ~~~ Ruby version: 1.9.3
 ~~~ JRuby version: 1.7.18
 ~~~ Gem version: 1.0.5
-       user     system      total        real
+user     system      total        real
 Benchmarking Ref::SoftReference...
-   0.270000   0.010000   0.280000 (  0.114000)
+  Before JVM warm-up...
+  0.160000   0.000000   0.160000 (  0.072000)
+After JVM warm-up...
+  0.150000   0.010000   0.160000 (  0.087000)
 Benchmarking Ref::WeakReference...
-   0.080000   0.000000   0.080000 (  0.029000)
+  Before JVM warm-up...
+  0.050000   0.000000   0.050000 (  0.025000)
+After JVM warm-up...
+   0.050000   0.000000   0.050000 (  0.033000)
 
+
+
+$ be jruby --server ref_speed_test.rb
 ~~~ Ruby version: 1.9.3
 ~~~ JRuby version: 1.7.18
 ~~~ Gem version: 2.0.0.pre1
        user     system      total        real
 Benchmarking Ref::SoftReference...
-   1.020000   0.040000   1.060000 (  0.410000)
+Before JVM warm-up...
+   0.990000   0.020000   1.010000 (  0.521000)
+After JVM warm-up...
+   0.390000   0.010000   0.400000 (  0.236000)
 Benchmarking Ref::WeakReference...
-   0.200000   0.020000   0.220000 (  0.165000)
+Before JVM warm-up...
+   0.200000   0.000000   0.200000 (  0.121000)
+After JVM warm-up...
+   0.060000   0.000000   0.060000 (  0.059000)
 
+
+
+$ be ruby ref_speed_test.rb
 ~~~ Ruby version: 2.2.0
 ~~~ Ruby engine: ruby
 ~~~ Gem version: 2.0.0.pre1
        user     system      total        real
 Benchmarking Ref::SoftReference...
-   0.610000   0.000000   0.610000 (  0.621205)
+   1.070000   0.000000   1.070000 (  1.066836)
 Benchmarking Ref::WeakReference...
-   0.120000   0.000000   0.120000 (  0.113426)
+   0.160000   0.000000   0.160000 (  0.162876)
 
+
+
+$ be ruby ref_speed_test.rb
 ~~~ Ruby version: 2.1.0
 ~~~ Ruby engine: rbx
 ~~~ Gem version: 2.0.0.pre1
        user     system      total        real
 Benchmarking Ref::SoftReference...
-   1.725505   0.007228   1.732733 (  0.922712)
+   2.852072   0.012584   2.864656 (  1.673675)
 Benchmarking Ref::WeakReference...
-   0.167794   0.001500   0.169294 (  0.088065)
+   0.287896   0.001336   0.289232 (  0.154698)
