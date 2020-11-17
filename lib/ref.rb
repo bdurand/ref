@@ -5,6 +5,7 @@ module Ref
   require 'ref/abstract_reference_key_map'
   require 'ref/reference'
   require 'ref/reference_queue'
+  require 'monitor'
 
   if defined?(Java)
     begin
