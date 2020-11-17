@@ -11,6 +11,7 @@ group :testing do
   gem 'test-unit', '~> 3.0.9'
   gem 'rspec', '~> 3.6'
   gem 'coveralls', '~> 0.8.21', :require => false
+  gem 'json', '< 2.3', :platforms => [:ruby_19, :jruby], :require => false
 end
 
 group :documentation do
